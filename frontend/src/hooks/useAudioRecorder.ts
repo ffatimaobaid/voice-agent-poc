@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { AudioState } from '../types';
 
-export const useAudioRecorder = (language: string) => {
+export const useAudioRecorder = (language: string, userId: string) => {
   const [audioState, setAudioState] = useState<AudioState>({
     isRecording: false,
     isProcessing: false,
@@ -18,10 +18,10 @@ export const useAudioRecorder = (language: string) => {
   const silenceTimerRef = useRef<number | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
-
   const startRecordingRef = useRef<() => void>(() => {});
 
-  const sendAudio = useCallback(async (audioBlob: Blob, language = "urdu") => {
+  // ----------------------------
+  const sendAudio = useCallback(async (audioBlob: Blob) => {
     if (!audioBlob) return;
 
     setAudioState(prev => ({ ...prev, isProcessing: true, error: null }));
@@ -30,6 +30,7 @@ export const useAudioRecorder = (language: string) => {
       const formData = new FormData();
       formData.append('file', audioBlob, 'recording.wav');
       formData.append('language', language);
+      formData.append('user_id', userId);
 
       const response = await fetch(
         'https://d780937a-fd43-4ac4-94de-799bdb823306-00-3542e9irhula5.sisko.replit.dev/transcribe-and-respond',
@@ -58,9 +59,7 @@ export const useAudioRecorder = (language: string) => {
 
       audio.onended = () => {
         setAudioState(p => ({ ...p, isPlaying: false }));
-        if (startRecordingRef.current) {
-          startRecordingRef.current();
-        }
+        if (startRecordingRef.current) startRecordingRef.current();
       };
 
       try {
@@ -82,7 +81,8 @@ export const useAudioRecorder = (language: string) => {
         isProcessing: false,
       }));
     }
-  }, []);
+  }, [language, userId]);
+  // ----------------------------
 
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
@@ -146,7 +146,7 @@ export const useAudioRecorder = (language: string) => {
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         setAudioState(p => ({ ...p, audioBlob, isRecording: false }));
-        sendAudio(audioBlob, language);
+        sendAudio(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -166,7 +166,7 @@ export const useAudioRecorder = (language: string) => {
         error: 'Failed to access microphone. Please check permissions.',
       }));
     }
-  }, [sendAudio, language]);
+  }, [sendAudio]);
 
   startRecordingRef.current = startRecording;
 
