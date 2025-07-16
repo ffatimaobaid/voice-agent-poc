@@ -56,6 +56,7 @@ function App() {
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
                 className="px-4 py-2 rounded-lg bg-white/10 text-white"
+                style={{ color: 'black', backgroundColor: 'white' }}
               >
                 <option value="urdu">Urdu</option>
                 <option value="english">English</option>
