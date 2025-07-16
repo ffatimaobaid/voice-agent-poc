@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { AudioState } from '../types';
 
-export const useAudioRecorder = () => {
+export const useAudioRecorder = (language: string) => {
   const [audioState, setAudioState] = useState<AudioState>({
     isRecording: false,
     isProcessing: false,
@@ -19,10 +19,9 @@ export const useAudioRecorder = () => {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
-  // ✅ add ref to hold startRecording function
   const startRecordingRef = useRef<() => void>(() => {});
 
-  const sendAudio = useCallback(async (audioBlob: Blob) => {
+  const sendAudio = useCallback(async (audioBlob: Blob, language = "urdu") => {
     if (!audioBlob) return;
 
     setAudioState(prev => ({ ...prev, isProcessing: true, error: null }));
@@ -30,6 +29,7 @@ export const useAudioRecorder = () => {
     try {
       const formData = new FormData();
       formData.append('file', audioBlob, 'recording.wav');
+      formData.append('language', language);
 
       const response = await fetch(
         'https://d780937a-fd43-4ac4-94de-799bdb823306-00-3542e9irhula5.sisko.replit.dev/transcribe-and-respond',
@@ -56,7 +56,6 @@ export const useAudioRecorder = () => {
 
       audio.onplay = () => setAudioState(p => ({ ...p, isPlaying: true }));
 
-      // ✅ automatically restart recording after response finishes playing
       audio.onended = () => {
         setAudioState(p => ({ ...p, isPlaying: false }));
         if (startRecordingRef.current) {
@@ -83,7 +82,7 @@ export const useAudioRecorder = () => {
         isProcessing: false,
       }));
     }
-  }, []); // keep deps empty to avoid circular
+  }, []);
 
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
@@ -147,7 +146,7 @@ export const useAudioRecorder = () => {
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         setAudioState(p => ({ ...p, audioBlob, isRecording: false }));
-        sendAudio(audioBlob);
+        sendAudio(audioBlob, language);
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -167,9 +166,8 @@ export const useAudioRecorder = () => {
         error: 'Failed to access microphone. Please check permissions.',
       }));
     }
-  }, [sendAudio]);
+  }, [sendAudio, language]);
 
-  // ✅ store startRecording into ref to use safely in sendAudio
   startRecordingRef.current = startRecording;
 
   const playResponse = useCallback((audioUrl?: string) => {
