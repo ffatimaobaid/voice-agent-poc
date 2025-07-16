@@ -10,6 +10,8 @@ import { WaveformAnimation } from './components/WaveformAnimation';
 
 function App() {
   const { theme } = useTheme();
+  const [language, setLanguage] = React.useState("urdu");
+
   const {
     audioState,
     startRecording,
@@ -18,7 +20,7 @@ function App() {
     stopPlaying,
     clearError,
     reset,
-  } = useAudioRecorder();
+  } = useAudioRecorder(language);
 
   return (
     <div
@@ -28,7 +30,6 @@ function App() {
         color: 'white',
       }}
     >
-      {/* Header */}
       <header className="w-full p-6 border-b border-white/20 shadow-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -42,13 +43,26 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md mx-auto">
           <div
             className="p-8 rounded-2xl shadow-2xl transition-all duration-300 border border-white/20 backdrop-blur-sm"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
           >
+            <div className="mb-6 text-center">
+              <label htmlFor="language" className="block text-white text-sm mb-2">Choose Language:</label>
+              <select
+                id="language"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="px-4 py-2 rounded-lg bg-white/10 text-white"
+              >
+                <option value="urdu">Urdu</option>
+                <option value="english">English</option>
+                <option value="arabic">Arabic</option>
+              </select>
+            </div>
+
             {/* Status Messages */}
             <div className="mb-6 space-y-3">
               {audioState.error && (
@@ -72,7 +86,6 @@ function App() {
               )}
             </div>
 
-            {/* Recording Section */}
             <div className="text-center mb-8">
               <div className="mb-6">
                 <RecordingButton
@@ -89,21 +102,13 @@ function App() {
 
               <div className="mb-6">
                 {audioState.isRecording ? (
-                  <p className="text-white/60">
-                    Listening... recording will stop when you're done speaking
-                  </p>
+                  <p className="text-white/60">Listening... recording will stop when you're done speaking</p>
                 ) : audioState.isProcessing ? (
-                  <p className="text-white">
-                    Processing your message...
-                  </p>
+                  <p className="text-white">Processing your message...</p>
                 ) : audioState.responseAudio ? (
-                  <p className="text-white">
-                    Response ready to play
-                  </p>
+                  <p className="text-white">Response ready to play</p>
                 ) : (
-                  <p className="text-white/50">
-                    Click to start conversation
-                  </p>
+                  <p className="text-white/50">Click to start conversation</p>
                 )}
               </div>
 
@@ -121,7 +126,6 @@ function App() {
               )}
             </div>
 
-            {/* Play Response Buttons */}
             {audioState.responseAudio && (
               <div className="flex justify-center items-center gap-4 mt-6">
                 <button
@@ -139,7 +143,6 @@ function App() {
                 </button>
               </div>
             )}
-
             {audioState.responseAudio && (
               <p className="text-sm text-white/60 mt-2 text-center">
                 Tap play to hear the response.
@@ -147,10 +150,8 @@ function App() {
             )}
           </div>
 
-          {/* Instructions */}
           <div className="mt-8 text-center">
-            <div
-              className="p-4 rounded-lg border border-white/10 backdrop-blur-sm transition-all duration-300"
+            <div className="p-4 rounded-lg border border-white/10 backdrop-blur-sm transition-all duration-300"
               style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
             >
               <h3 className="font-semibold mb-2 text-white">How to use:</h3>
@@ -166,7 +167,6 @@ function App() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="w-full p-6 text-center border-t border-white/10">
         <p className="text-white/60 text-sm">
           Powered by Groq, Whisper, and ElevenLabs — Styled for Finova
