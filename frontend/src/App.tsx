@@ -49,19 +49,27 @@ function App() {
             className="p-8 rounded-2xl shadow-2xl transition-all duration-300 border border-white/20 backdrop-blur-sm"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
           >
-            <div className="mb-6 text-center">
-              <label htmlFor="language" className="block text-white text-sm mb-2">Choose Language:</label>
-              <select
-                id="language"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white"
-              >
-                <option value="urdu">Urdu</option>
-                <option value="english">English</option>
-                <option value="arabic">Arabic</option>
-              </select>
-            </div>
+            <div className="text-center mb-6">
+  <label htmlFor="language" className="block mb-2 text-white font-medium">
+    Choose Language:
+  </label>
+
+  <select
+    id="language"
+    value={selectedLanguage}
+    onChange={(e) => setSelectedLanguage(e.target.value)}
+    className="w-40 px-4 py-2 rounded-lg text-white font-semibold shadow-md outline-none transition-all duration-300"
+    style={{
+      backgroundColor: theme.primary,
+      border: `1px solid ${theme.accent}`,
+      color: theme.text,
+    }}
+  >
+    <option value="urdu">Urdu</option>
+    <option value="arabic">Arabic</option>
+  </select>
+</div>
+
 
             {/* Status Messages */}
             <div className="mb-6 space-y-3">
