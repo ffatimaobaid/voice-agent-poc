@@ -12,6 +12,15 @@ function App() {
   const { theme } = useTheme();
   const [language, setLanguage] = React.useState("urdu");
 
+  // ⬇️ Generate/persist a unique user ID (once per browser)
+  const [userId] = React.useState(() => {
+    const savedId = localStorage.getItem("user_id");
+    if (savedId) return savedId;
+    const newId = "user_" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("user_id", newId);
+    return newId;
+  });
+
   const {
     audioState,
     startRecording,
@@ -20,7 +29,7 @@ function App() {
     stopPlaying,
     clearError,
     reset,
-  } = useAudioRecorder(language);
+  } = useAudioRecorder(language, userId); // ⬅️ pass both
 
   return (
     <div
@@ -50,13 +59,18 @@ function App() {
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
           >
             <div className="mb-6 text-center">
-              <label htmlFor="language" className="block text-white text-sm mb-2">Choose Language:</label>
+              <label htmlFor="language" className="block text-white text-sm mb-2">
+                Choose Language:
+              </label>
               <select
                 id="language"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white"
-                style={{ color: 'black', backgroundColor: 'white' }}
+                className="px-4 py-2 rounded-lg"
+                style={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                }}
               >
                 <option value="urdu">Urdu</option>
                 <option value="english">English</option>
@@ -98,12 +112,16 @@ function App() {
               </div>
 
               <div className="mb-6">
-                <WaveformAnimation isActive={audioState.isRecording || audioState.isProcessing} />
+                <WaveformAnimation
+                  isActive={audioState.isRecording || audioState.isProcessing}
+                />
               </div>
 
               <div className="mb-6">
                 {audioState.isRecording ? (
-                  <p className="text-white/60">Listening... recording will stop when you're done speaking</p>
+                  <p className="text-white/60">
+                    Listening... recording will stop when you're done speaking
+                  </p>
                 ) : audioState.isProcessing ? (
                   <p className="text-white">Processing your message...</p>
                 ) : audioState.responseAudio ? (
@@ -113,7 +131,9 @@ function App() {
                 )}
               </div>
 
-              {(audioState.audioBlob || audioState.responseAudio || audioState.isProcessing) && (
+              {(audioState.audioBlob ||
+                audioState.responseAudio ||
+                audioState.isProcessing) && (
                 <div className="flex justify-center">
                   <button
                     onClick={reset}
@@ -152,7 +172,8 @@ function App() {
           </div>
 
           <div className="mt-8 text-center">
-            <div className="p-4 rounded-lg border border-white/10 backdrop-blur-sm transition-all duration-300"
+            <div
+              className="p-4 rounded-lg border border-white/10 backdrop-blur-sm transition-all duration-300"
               style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
             >
               <h3 className="font-semibold mb-2 text-white">How to use:</h3>
