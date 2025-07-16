@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { AudioState } from '../types';
 
-export const useAudioRecorder = () => {
+export const useAudioRecorder = (language: string) => {
   const [audioState, setAudioState] = useState<AudioState>({
     isRecording: false,
     isProcessing: false,
@@ -10,8 +10,6 @@ export const useAudioRecorder = () => {
     responseAudio: null,
     error: null,
   });
-
-  const [language, setLanguage] = useState<string>('Urdu'); // 👈 default language
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -23,7 +21,7 @@ export const useAudioRecorder = () => {
 
   const startRecordingRef = useRef<() => void>(() => {});
 
-  const sendAudio = useCallback(async (audioBlob: Blob) => {
+  const sendAudio = useCallback(async (audioBlob: Blob, language = "urdu") => {
     if (!audioBlob) return;
 
     setAudioState(prev => ({ ...prev, isProcessing: true, error: null }));
@@ -31,9 +29,10 @@ export const useAudioRecorder = () => {
     try {
       const formData = new FormData();
       formData.append('file', audioBlob, 'recording.wav');
+      formData.append('language', language);
 
       const response = await fetch(
-        `https://d780937a-fd43-4ac4-94de-799bdb823306-00-3542e9irhula5.sisko.replit.dev/transcribe-and-respond?language=${language}`, // 👈 language sent
+        'https://d780937a-fd43-4ac4-94de-799bdb823306-00-3542e9irhula5.sisko.replit.dev/transcribe-and-respond',
         {
           method: 'POST',
           body: formData,
@@ -56,6 +55,7 @@ export const useAudioRecorder = () => {
       audioRef.current = audio;
 
       audio.onplay = () => setAudioState(p => ({ ...p, isPlaying: true }));
+
       audio.onended = () => {
         setAudioState(p => ({ ...p, isPlaying: false }));
         if (startRecordingRef.current) {
@@ -82,7 +82,7 @@ export const useAudioRecorder = () => {
         isProcessing: false,
       }));
     }
-  }, [language]);
+  }, []);
 
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
@@ -146,7 +146,7 @@ export const useAudioRecorder = () => {
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         setAudioState(p => ({ ...p, audioBlob, isRecording: false }));
-        sendAudio(audioBlob);
+        sendAudio(audioBlob, language);
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -166,7 +166,7 @@ export const useAudioRecorder = () => {
         error: 'Failed to access microphone. Please check permissions.',
       }));
     }
-  }, [sendAudio]);
+  }, [sendAudio, language]);
 
   startRecordingRef.current = startRecording;
 
@@ -234,7 +234,5 @@ export const useAudioRecorder = () => {
     stopPlaying,
     clearError,
     reset,
-    language,
-    setLanguage, // 👈 return language setter
   };
 };
