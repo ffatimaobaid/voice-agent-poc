@@ -33,7 +33,7 @@ export const useAudioRecorder = (language: string, userId: string) => {
       formData.append('user_id', userId);
 
       const response = await fetch(
-        'https://voiceagentbackend.onrender.com',
+        'https://voiceagentbackend.onrender.com/transcribe-and-respond',
         {
           method: 'POST',
           body: formData,
